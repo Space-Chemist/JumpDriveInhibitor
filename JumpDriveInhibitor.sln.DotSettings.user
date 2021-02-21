@@ -1,0 +1,18 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CTorch_005CDedicatedServer64_005CSandbox_002ECommon_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CTorch_005CDedicatedServer64_005CSandbox_002EGame_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CTorch_005CDedicatedServer64_005CSpaceEngineers_002EGame_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CTorch_005CDedicatedServer64_005CSpaceEngineers_002EObjectBuilders_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CTorch_005CDedicatedServer64_005CVRage_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CTorch_005CDedicatedServer64_005CVRage_002EGame_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CTorch_005CDedicatedServer64_005CVRage_002ELibrary_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CTorch_005CDedicatedServer64_005CVRage_002EMath_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005CTails_005CRiderProjects_005CReferralsplugin_005CReferrals_0020project_005Cbin_005CDebug_005CSandbox_002ECommon_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005CTails_005CRiderProjects_005CReferralsplugin_005CReferrals_0020project_005Cbin_005CDebug_005CSandbox_002EGame_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005CTails_005CRiderProjects_005CReferralsplugin_005CReferrals_0020project_005Cbin_005CDebug_005CSpaceEngineers_002EGame_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005CTails_005CRiderProjects_005CReferralsplugin_005CReferrals_0020project_005Cbin_005CDebug_005CSpaceEngineers_002EObjectBuilders_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005CTails_005CRiderProjects_005CReferralsplugin_005CReferrals_0020project_005Cbin_005CDebug_005CVRage_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005CTails_005CRiderProjects_005CReferralsplugin_005CReferrals_0020project_005Cbin_005CDebug_005CVRage_002EGame_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005CTails_005CRiderProjects_005CReferralsplugin_005CReferrals_0020project_005Cbin_005CDebug_005CVRage_002ELibrary_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005CTails_005CRiderProjects_005CReferralsplugin_005CReferrals_0020project_005Cbin_005CDebug_005CVRage_002EMath_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005CTails_005CRiderProjects_005CReferralsplugin_005CReferrals_0020project_005Cbin_005CDebug_005CVRage_002ERender_002Edll/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
