@@ -1,6 +1,6 @@
 ﻿using Sandbox.ModAPI;
 using VRage.Game;
-
+using IMyBeacon = Sandbox.ModAPI.Ingame.IMyBeacon;
 namespace JumpDriveInhibitor
 {
     public class BeaconStorage
