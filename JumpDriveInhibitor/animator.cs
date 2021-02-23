@@ -37,6 +37,7 @@ namespace JumpDriveInhibitor
         private int RotationTime { get; set; }
         private bool once { get; set; } = false;
         private bool subpartFirstFind = true;
+        private List<BeaconStorage> store;
         private Matrix subpartLocalMatrix; // keeping the matrix here because subparts are being re-created on paint, resetting their orientations
         private float targetSpeedMultiplier; // used for smooth transition
 
@@ -64,8 +65,8 @@ namespace JumpDriveInhibitor
             {
                 _grids.Add(grid.EntityId, grid);
                 grid.OnMarkForClose += GridMarkedForClose;
-                grid.OnBlockAdded += Fuckeveryone;
-                grid.OnBlockRemoved += Fuckeveryone;
+                grid.OnBlockAdded += addToStore;
+                grid.OnBlockRemoved += removeFromStore;
                 grid.OnBlockIntegrityChanged += Fuckeveryone;
             }
         }
@@ -75,6 +76,23 @@ namespace JumpDriveInhibitor
             _grids.Remove(ent.EntityId);
         }
 
+
+        private void removeFromStore(IMySlimBlock block)
+        {
+            if (block.BlockDefinition.Id.SubtypeName.Equals("JumpInhibitor"))
+            {
+                store.Remove();
+            }
+        }
+        
+        private void addToStore(IMySlimBlock block)
+        {
+            if (block.BlockDefinition.Id.SubtypeName.Equals("JumpInhibitor"))
+            {
+                store.Add();
+            }
+        }
+        
         private void Fuckeveryone(IMySlimBlock fuck)
         {
             var gts = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(fuck.CubeGrid);
