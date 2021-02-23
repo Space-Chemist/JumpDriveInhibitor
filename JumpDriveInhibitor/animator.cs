@@ -119,18 +119,20 @@ namespace JumpDriveInhibitor
                         }    
                     }    
                     
-                    switch (shouldSpin)
+                    if (!shouldSpin && Math.Abs(targetSpeedMultiplier) < 0.00001f)
                     {
-                        case false when Math.Abs(targetSpeedMultiplier) < 0.00001f:
-                            return;
-                        case true when targetSpeedMultiplier < 1:
-                            targetSpeedMultiplier = Math.Min(targetSpeedMultiplier + ACCELERATE_PERCENT_PER_TICK, 1);
-                            break;
-                        case false when targetSpeedMultiplier > 0:
-                            targetSpeedMultiplier = Math.Max(targetSpeedMultiplier - DEACCELERATE_PERCENT_PER_TICK, 0);
-                            break;
-                    }
+                        return;
+                    }    
+                        
 
+                    if(shouldSpin && targetSpeedMultiplier < 1)
+                    {
+                        targetSpeedMultiplier = Math.Min(targetSpeedMultiplier + ACCELERATE_PERCENT_PER_TICK, 1);
+                    }
+                    else if(!shouldSpin && targetSpeedMultiplier > 0)
+                    {
+                        targetSpeedMultiplier = Math.Max(targetSpeedMultiplier - DEACCELERATE_PERCENT_PER_TICK, 0);
+                    }
 
                     var camPos = MyAPIGateway.Session.Camera.WorldMatrix.Translation; // local machine camera position
 
