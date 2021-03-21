@@ -28,11 +28,6 @@ namespace JumpDriveInhibitor
     [MyEntityComponentDescriptor(typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Beacon), false, new string[] { "JumpInhibitor", "JumpInhibitorSmall" })]
     public class JumpDriveInhibitorBlock : MyGameLogicComponent
     {
-        #region variables and constants
-        private const string ConfigSpeedPattern = @"^(?<command>/configspeed)(?:\s+(?<config>((ResetAll)|(LargeShipMaxSpeed)|(LargeShipSpeed)|(LargeShip)|(Large)|(SmallShipMaxSpeed)|(SmallShipSpeed)|(SmallShip)|(Small)|(ThrustRatio)|(EnableThrustRatio)|(LockThrustRatio)|(MaxAllSpeed)|(MissileMinSpeed)|(MissileMin)|(MissileMaxSpeed)|(MissileMax)|(autopilotspeed)|(autopilotlimit)|(autopilot)|(remoteautopilotlimit)|(remoteautopilotspeed)|(remoteautopilot)|(remotecontrolmaxspeed)|(containerdropdeployheight)|(containerdeployheight)|(dropdeployheight)|(dropheight)|(respawnshipdeployheight)|(respawndeployheight)|(respawnheight)))(?:\s+(?<value>.+))?)?";
-
-        private const string ShortSpeedPattern = @"^(?<command>(/maxspeed))(?:\s+(?<value>.+))";
-        
         private VRage.ObjectBuilders.MyObjectBuilder_EntityBase _objectBuilder;
         private IMyBeacon _beacon;
         private IMyEntity _entity;
@@ -51,29 +46,7 @@ namespace JumpDriveInhibitor
         private float targetSpeedMultiplier; // used for smooth transition
         private List<BeaconStorage> store = new List<BeaconStorage>();
         private bool _isInitialized;
-        private bool _isClientRegistered;
-        private bool _isServerRegistered;
-        private readonly Action<byte[]> _messageHandler = new Action<byte[]>(HandleMessage);
-        public static JumpDriveInhibitorBlock Instance;
-        
-        public ConfigGeneral DefaultDefinitionValues;
-        /// <summary>
-        /// The current values that are stored and read into the game.
-        /// </summary>
-        public ConfigGeneral ConfigGeneralComponent;
 
-        /// <summary>
-        /// The previous values before we start changing them.
-        /// </summary>
-        public ConfigGeneral OldConfigGeneral;
-        
-        /// <summary>
-        /// Indicates the stage of the settings if we have changed any.
-        /// </summary>
-        public bool IsModified;
-        #endregion
-        
-        
         public override void Init(VRage.ObjectBuilders.MyObjectBuilder_EntityBase objectBuilder)
         {
             
@@ -117,95 +90,13 @@ namespace JumpDriveInhibitor
                 flareDefinition.Intensity = 0;
             }
 
-            MyAPIGateway.Session.Unload += UnloadData;
-            MyAPIGateway.Session.Save += SaveData;
+            NetworkService.NetworkInit();
         }
 
         private void Setup()
         {
-            try
-            {
-                var b = base.Entity as MyCubeBlock;
-                // This Variables are already loaded by this point, but unaccessible because we need Utilities.
-
-                // Need to create the Utilities, as it isn't yet created by the game at this point.
-                //MyModAPIHelper.OnSessionLoaded();
-                if (b != null)
-                {
-                    var def = b.BlockDefinition as MyBeaconDefinition;
-                    if (def != null)
-                    {
-                        if (MyAPIGateway.Utilities == null)
-                         MyAPIGateway.Utilities = MyAPIUtilities.Static;
-                        //    MyAPIGateway.Utilities = new MyAPIUtilities();
-
-                        DefaultDefinitionValues = new ConfigGeneral
-                        {
-                           MaxRadius = def.MaxBroadcastRadius,
-                           MaxPowerDrain = def.MaxBroadcastPowerDrainkW,
-                        };
-
-                        // Load the speed on both server and client.
-                        string xmlValue;
-                        if (MyAPIGateway.Utilities.GetVariable("ConfigGeneral", out xmlValue))
-                        {
-                           ConfigGeneralComponent = MyAPIGateway.Utilities.SerializeFromXML<ConfigGeneral>(xmlValue);
-                           if (ConfigGeneralComponent != null)
-                           {
-                               // Apply settings.
-                               if (ConfigGeneralComponent.MaxRadius > 0)
-                                   def.MaxBroadcastRadius = (float)ConfigGeneralComponent.MaxRadius;
-                               if (ConfigGeneralComponent.MaxPowerDrain > 0)
-                                   def.MaxBroadcastPowerDrainkW = (float)ConfigGeneralComponent.MaxPowerDrain;
-
-                               OldConfigGeneral = ConfigGeneralComponent.Clone();
-                               return;
-                           }
-                        }
-
-                        // creates a new EnvironmentComponent if one was not found in the game Variables.
-                        ConfigGeneralComponent = new ConfigGeneral
-                        {
-                           MaxRadius = def.MaxBroadcastRadius,
-                           MaxPowerDrain = def.MaxBroadcastPowerDrainkW
-                        };
-                        OldConfigGeneral = ConfigGeneralComponent.Clone();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                VRage.Utils.MyLog.Default.WriteLine("configuration error in jump inhibitor " + ex.Message);
-
-                // The Loggers doesn't actually exist yet, as Init is called before UpdateBeforeSimulation.
-                // TODO: should rework the code to change this.
-                //ClientLogger.WriteException(ex);
-                //ServerLogger.WriteException(ex);
-            }
+            Settings.LoadSettings();
         }
-        
-        private void InitClient()
-        {
-            _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
-            _isClientRegistered = true;
-
-            MyAPIGateway.Utilities.MessageEntered += GotMessage;
-
-            if (MyAPIGateway.Multiplayer.MultiplayerActive && !_isServerRegistered) // if not the server, also need to register the messagehandler.
-            {
-                
-                MyAPIGateway.Multiplayer.RegisterMessageHandler(SpeedConsts.ConnectionId, _messageHandler);
-            }
-        }
-
-        private void InitServer()
-        {
-            _isInitialized = true; // Set this first to block any other calls from UpdateAfterSimulation().
-            _isServerRegistered = true;
-            MyAPIGateway.Multiplayer.RegisterMessageHandler(SpeedConsts.ConnectionId, _messageHandler);
-            //MyAPIGateway.Entities.OnEntityAdd += Entities_OnEntityAdd;
-        }
-        
         public override void UpdateAfterSimulation()
         {
             base.UpdateAfterSimulation();
@@ -216,29 +107,6 @@ namespace JumpDriveInhibitor
                    {
                        Setup();
                        _start = false;
-                   }
-                   
-                   //VRage.Utils.MyLog.Default.WriteLine("##Mod## ConfigurableSpeed UpdateBeforeSimulation");
-                   if (Instance == null)
-                       Instance = this;
-
-                   // This needs to wait until the MyAPIGateway.Session.Player is created, as running on a Dedicated server can cause issues.
-                   // It would be nicer to just read a property that indicates this is a dedicated server, and simply return.
-                   if (!_isInitialized && MyAPIGateway.Session != null && MyAPIGateway.Session.Player != null)
-                   {
-                       if (MyAPIGateway.Session.OnlineMode.Equals(MyOnlineModeEnum.OFFLINE)) // pretend single player instance is also server.
-                           InitServer();
-                       if (!MyAPIGateway.Session.OnlineMode.Equals(MyOnlineModeEnum.OFFLINE) && MyAPIGateway.Multiplayer.IsServer && !MyAPIGateway.Utilities.IsDedicated)
-                           InitServer();
-                       InitClient();
-                   }
-
-                   // Dedicated Server.
-                   if (!_isInitialized && MyAPIGateway.Utilities != null && MyAPIGateway.Multiplayer != null
-                       && MyAPIGateway.Session != null && MyAPIGateway.Utilities.IsDedicated && MyAPIGateway.Multiplayer.IsServer)
-                   {
-                       InitServer();
-                       return;
                    }
 
                    base.UpdateBeforeSimulation();
@@ -397,97 +265,13 @@ namespace JumpDriveInhibitor
                }
 
         }
-        
-        private void UnloadData()
-        {
-            if (_isClientRegistered)
-            {
-                if (MyAPIGateway.Utilities != null)
-                {
-                    MyAPIGateway.Utilities.MessageEntered -= GotMessage;
-                }
-
-                if (!_isServerRegistered) // if not the server, also need to unregister the messagehandler.
-                {
-                    
-                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(SpeedConsts.ConnectionId, _messageHandler);
-                }
-
-                
-            }
-
-            if (_isServerRegistered)
-            {
-                MyAPIGateway.Multiplayer.UnregisterMessageHandler(SpeedConsts.ConnectionId, _messageHandler);
-                //MyAPIGateway.Entities.OnEntityAdd -= Entities_OnEntityAdd;
-            }
-        }
-
-        private void SaveData()
-        {
-            if (_isServerRegistered)
-            {
-                // Only save the speed back to the server duruing world save.
-                var xmlValue = MyAPIGateway.Utilities.SerializeToXML(ConfigGeneralComponent);
-                MyAPIGateway.Utilities.SetVariable("ConfigGeneral", xmlValue);
-            }
-        }
-        
-        private static void HandleMessage(byte[] message)
-        {
-            ConnectionHelper.ProcessData(message);
-        }
-
-        private void GotMessage(string messageText, ref bool sendToOthers)
-        {
-            try
-            {
-                // here is where we nail the echo back on commands "return" also exits us from processMessage
-                if (ProcessMessage(messageText)) { sendToOthers = false; }
-            }
-            catch (Exception ex)
-            {
-                MyLog.Default.WriteLine($"Error in Jump Inhibitor {ex}");
-            }
-        }
-        
-        private bool ProcessMessage(string messageText)
-        {
-            #region configspeed
-
-            if (MyAPIGateway.Session.Player.PromoteLevel == MyPromoteLevel.Admin)
-            {
-                Match match = Regex.Match(messageText, ConfigSpeedPattern, RegexOptions.IgnoreCase);
-                if (match.Success)
-                {
-                    MessageConfig.SendMessage(match.Groups["config"].Value, match.Groups["value"].Value);
-                    return true;
-                }
-
-                match = Regex.Match(messageText, ShortSpeedPattern, RegexOptions.IgnoreCase);
-                if (match.Success)
-                {
-                    MessageConfig.SendMessage("MaxAllSpeed", match.Groups["value"].Value);
-                    return true;
-                }
-            }
-
-            #endregion configspeed
-
-            // it didnt start with help or anything else that matters so return false and get us out of here;
-            return false;
-        }
-
         public override void Close()
         {
             List<BeaconStorage> temp = store.ToList();
-            MyVisualScriptLogicProvider.SendChatMessage( "got here ");
-            MyVisualScriptLogicProvider.SendChatMessage(base.Entity.EntityId.ToString(), "42: ");
             foreach (var b in temp)
             {
                 if (b.Beacon.EntityId == base.Entity.EntityId)
                 {
-                    MyVisualScriptLogicProvider.SendChatMessage( "block = beacon ");
                     if (b.Effect != null)
                     {
                         b.Effect.Stop();

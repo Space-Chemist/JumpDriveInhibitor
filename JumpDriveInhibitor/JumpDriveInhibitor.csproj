@@ -74,14 +74,9 @@
   <ItemGroup>
     <Compile Include="BeaconStorage.cs" />
     <Compile Include="ConfigGeneral.cs" />
-    <Compile Include="ConnectionHelper.cs" />
     <Compile Include="JumpDriveInhibitorBlock.cs" />
-    <Compile Include="MessageBase.cs" />
-    <Compile Include="MessageClientDialogMessage.cs" />
-    <Compile Include="MessageClientTextMessage.cs" />
-    <Compile Include="MessageConfig.cs" />
-    <Compile Include="MessageSide.cs" />
-    <Compile Include="SpeedConsts.cs" />
+    <Compile Include="NetworkService.cs" />
+    <Compile Include="Settings.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
