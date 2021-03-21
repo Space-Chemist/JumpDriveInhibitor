@@ -92,6 +92,18 @@ namespace JumpDriveInhibitor
 
             NetworkService.NetworkInit();
         }
+        
+        public void updateDef(string message)
+        {
+            var b = _beacon as MyCubeBlock;
+            if (b != null)
+            {
+                var def = b.BlockDefinition as MyBeaconDefinition;
+                var config = message.Split( '-' );
+                var rad = config[0];
+                var pow = config[1];
+            }
+        }
 
         private void Setup()
         {
