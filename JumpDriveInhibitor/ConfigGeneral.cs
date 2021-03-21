@@ -38,14 +38,9 @@ namespace JumpDriveInhibitor
 			        string configcontents = reader.ReadToEnd();
 			        config = MyAPIGateway.Utilities.SerializeFromXML<ConfigGeneral>(configcontents);
 			        //MyVisualScriptLogicProvider.SendChatMessage(config.ToString(), "config: ");
-			        
-			        
-			        //check if sever
-			        if (MyAPIGateway.Session.IsServer)
-			        {
-				        var msg = $"{config.MaxRadius.ToString(CultureInfo.InvariantCulture)}-{config.MaxPowerDrain.ToString(CultureInfo.InvariantCulture)}";
-				        NetworkService.SendPacket(msg);
-			        }
+			        if (!MyAPIGateway.Session.IsServer) return config;
+			        var msg = $"{config.MaxRadius.ToString(CultureInfo.InvariantCulture)}-{config.MaxPowerDrain.ToString(CultureInfo.InvariantCulture)}";
+			        NetworkService.SendPacket(msg);
 			        return config;
 		        }
 		        catch (Exception)
