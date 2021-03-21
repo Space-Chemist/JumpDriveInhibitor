@@ -41,8 +41,11 @@ namespace JumpDriveInhibitor
 			        
 			        
 			        //check if sever
-			        var msg = $"{config.MaxRadius.ToString(CultureInfo.InvariantCulture)}-{config.MaxPowerDrain.ToString(CultureInfo.InvariantCulture)}";
-			        NetworkService.SendPacket(msg);
+			        if (MyAPIGateway.Session.IsServer)
+			        {
+				        var msg = $"{config.MaxRadius.ToString(CultureInfo.InvariantCulture)}-{config.MaxPowerDrain.ToString(CultureInfo.InvariantCulture)}";
+				        NetworkService.SendPacket(msg);
+			        }
 			        return config;
 		        }
 		        catch (Exception)

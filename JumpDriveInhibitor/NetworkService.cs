@@ -17,7 +17,7 @@ namespace JumpDriveInhibitor
             try
             {
                 var message = Encoding.ASCII.GetString(msg);
-                JumpDriveInhibitor.JumpDriveInhibitorBlock.updateDef(message);
+                JumpDriveInhibitorBlock.instance.updateDef(message);
             }
             catch (Exception error)
             {

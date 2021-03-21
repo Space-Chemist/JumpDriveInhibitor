@@ -45,7 +45,7 @@ namespace JumpDriveInhibitor
         private Matrix subpartLocalMatrix; // keeping the matrix here because subparts are being re-created on paint, resetting their orientations
         private float targetSpeedMultiplier; // used for smooth transition
         private List<BeaconStorage> store = new List<BeaconStorage>();
-        private bool _isInitialized;
+        public static JumpDriveInhibitorBlock instance;
 
         public override void Init(VRage.ObjectBuilders.MyObjectBuilder_EntityBase objectBuilder)
         {
@@ -102,6 +102,8 @@ namespace JumpDriveInhibitor
                 var config = message.Split( '-' );
                 var rad = config[0];
                 var pow = config[1];
+                def.MaxBroadcastRadius = Int32.Parse(rad);
+                def.MaxBroadcastPowerDrainkW = Int32.Parse(pow);
             }
         }
 
@@ -115,12 +117,6 @@ namespace JumpDriveInhibitor
 
                try
                {
-                   if (_start)
-                   {
-                       Setup();
-                       _start = false;
-                   }
-
                    base.UpdateBeforeSimulation();
                    
                    List<BeaconStorage> temp = store.ToList();
@@ -238,6 +234,7 @@ namespace JumpDriveInhibitor
             base.UpdateAfterSimulation10();
                try
                {
+                   Setup();
                    if (!_logicEnabled || _beacon == null || !_beacon.Enabled || !_beacon.IsWorking ||
                        !_beacon.IsFunctional) return;
                    
