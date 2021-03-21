@@ -8,8 +8,8 @@ namespace JumpDriveInhibitor
 	[XmlRoot("Beacon")]
     public class ConfigGeneral
     {
-		public int MaxRadius { get; set; }
-		public int MaxPowerDrainInKw { get; set; }
+		public float MaxRadius { get; set; }
+		public float MaxPowerDrainInKw { get; set; }
 
 		public ConfigGeneral()
 		{

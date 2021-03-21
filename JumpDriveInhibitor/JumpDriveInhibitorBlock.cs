@@ -15,6 +15,7 @@ using VRage.Game.Entity;
 using VRage.Utils;
 using IMyBeacon = Sandbox.ModAPI.Ingame.IMyBeacon;
 using IMyJumpDrive = Sandbox.ModAPI.Ingame.IMyJumpDrive;
+using IMySlimBlock = VRage.Game.ModAPI.Ingame.IMySlimBlock;
 
 namespace JumpDriveInhibitor
 {
@@ -43,7 +44,7 @@ namespace JumpDriveInhibitor
             
             _objectBuilder = objectBuilder;
             _beacon = (Entity as IMyBeacon);
-           
+            Setup();
 
             if (_beacon != null && _beacon.BlockDefinition.SubtypeId.Equals("JumpInhibitor"))
             {
@@ -73,9 +74,7 @@ namespace JumpDriveInhibitor
                 };
                 store.Add(bs);
             }
-            
-            Settings.LoadSettings();
-            
+
             var b = _beacon as MyCubeBlock;
             if (b != null)
             {
@@ -84,12 +83,90 @@ namespace JumpDriveInhibitor
                 MyFlareDefinition flareDefinition = MyDefinitionManager.Static.GetDefinition(id) as MyFlareDefinition;
                 
                 flareDefinition.Intensity = 0;
-                
-                def.MaxBroadcastRadius = Settings.General.MaxRadius;
-                def.MaxBroadcastPowerDrainkW = Settings.General.MaxPowerDrainInKw;
-                MyLog.Default.WriteLine("12345");
             }
             MyAPIGateway.Entities.OnEntityRemove += Removal;
+            MyAPIGateway.Entities.OnEntityAdd += Added;
+        }
+
+        private void Setup()
+        {
+            Settings.LoadSettings();
+        }
+
+        private void Added(IMyEntity obj)
+        {
+            var grid = obj as IMyCubeGrid;
+            if (grid != null)
+            {
+                grid.OnMarkForClose += Marked;
+                grid.OnBlockRemoved += Mark;
+                grid.OnClose += Marked;
+                grid.OnClosing += Marked;
+
+            }    
+            
+        }
+
+        private void Marked(IMyEntity ob)
+        {
+            var grid = ob as IMyCubeGrid;
+            if (grid != null)
+            {
+                List<IMyBeacon> beacon = new List<IMyBeacon>();
+                var gts = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
+                gts.GetBlocksOfType(beacon, block =>
+                {
+                    return block.BlockDefinition.SubtypeName.Equals("JumpInhibitor");
+                    
+                });
+                foreach (var block in beacon)
+                {
+                    foreach (var b in store)
+                    {
+                        if (b.Beacon.EntityId == block.EntityId)
+                        {
+                            store = new List<BeaconStorage>();
+                            if (b.Effect != null)
+                            {
+                                b.Effect.Stop();
+                            }    
+                            
+                            store.Remove(b);
+                        }
+                    }
+                }
+            }    
+        }
+        
+        private void Mark(VRage.Game.ModAPI.IMySlimBlock mySlimBlock)
+        {
+            var grid = mySlimBlock.CubeGrid;
+            if (grid != null)
+            {
+                List<IMyBeacon> beacon = new List<IMyBeacon>();
+                var gts = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(grid);
+                gts.GetBlocksOfType(beacon, block =>
+                {
+                    return block.BlockDefinition.SubtypeName.Equals("JumpInhibitor");
+                    
+                });
+                foreach (var block in beacon)
+                {
+                    foreach (var b in store)
+                    {
+                        if (b.Beacon.EntityId == block.EntityId)
+                        {
+                            store = new List<BeaconStorage>();
+                            if (b.Effect != null)
+                            {
+                                b.Effect.Stop();
+                            }    
+                            
+                            store.Remove(b);
+                        }
+                    }
+                }
+            }    
         }
 
         private void Removal(IMyEntity obj)
@@ -127,6 +204,12 @@ namespace JumpDriveInhibitor
                    {
                        var entity = beaconStorage.Beacon as MyEntity;
                        bool shouldSpin = beaconStorage.Beacon.IsWorking; // if block is functional and enabled and powered.
+
+                       if (beaconStorage.Beacon.CubeGrid == null && beaconStorage.Effect != null)
+                       {
+                           beaconStorage.Effect.Stop();
+                           store.Remove(beaconStorage);
+                       }    
                        
                        if (beaconStorage.Beacon == null || !beaconStorage.Beacon.Enabled || !beaconStorage.Beacon.IsWorking || !beaconStorage.Beacon.IsFunctional)
                        {
@@ -192,11 +275,20 @@ namespace JumpDriveInhibitor
                            e.WorldMatrix = beaconStorage.Beacon.WorldMatrix;
                            beaconStorage.Effect = e;
                            beaconStorage.Once = true;
+                           beaconStorage.Effect.UserScale = beaconStorage.Beacon.Radius/600;
+                           beaconStorage.Effect.UserEmitterScale = beaconStorage.Beacon.Radius/600;
+                           beaconStorage.Effect.Play();
                        }
 
-                       beaconStorage.Effect.UserScale = beaconStorage.Beacon.Radius/600;
-                       beaconStorage.Effect.UserEmitterScale = beaconStorage.Beacon.Radius/600;
-                       beaconStorage.Effect.Play();
+                       if (beaconStorage.Effect != null)
+                       {
+                           beaconStorage.Effect.UserScale = beaconStorage.Beacon.Radius/600;
+                           beaconStorage.Effect.UserEmitterScale = beaconStorage.Beacon.Radius/600;
+                           beaconStorage.Effect.WorldMatrix = beaconStorage.Beacon.WorldMatrix;
+                           beaconStorage.Effect.Update();
+                       }    
+
+                       
 
                        MyEntitySubpart subpart2;
                        if (subpart != null && subpart.TryGetSubpart("Ring", out subpart2))
@@ -227,6 +319,20 @@ namespace JumpDriveInhibitor
                {
                    if (!_logicEnabled || _beacon == null || !_beacon.Enabled || !_beacon.IsWorking ||
                        !_beacon.IsFunctional) return;
+                   var b = _beacon as MyCubeBlock;
+                   if (b != null)
+                   {
+                       var def = b.BlockDefinition as MyBeaconDefinition;
+
+                       if (def != null)
+                       {
+                           def.MaxBroadcastRadius =  Settings.General.MaxRadius;
+                           def.MaxBroadcastPowerDrainkW =  Settings.General.MaxPowerDrainInKw;
+                           MyLog.Default.WriteLine($"{Settings.General.MaxRadius}");
+                           MyLog.Default.WriteLine($"{Settings.General.MaxPowerDrainInKw}");
+                       }    
+                       
+                   }
 
                    List<IMyEntity> l;
 
@@ -238,16 +344,13 @@ namespace JumpDriveInhibitor
                    if (_entity == null)
                        _entity = MyAPIGateway.Entities.GetEntityById(parentGrid.EntityId);
 
-                   if (parentGrid == null || (!parentGrid.IsStatic &&
-                                              (_entity.Physics == null || _entity.Physics.LinearVelocity.Length() != 0)))
+                   if (parentGrid == null)
                        return;
 
                    foreach (var e in l)
                    {
                        IMyCubeBlock block = e as IMyCubeBlock;
-                       
-                       
-                       
+
                        if (block != null && block.SlimBlock.FatBlock != null &&
                            (block.SlimBlock.FatBlock as IMyJumpDrive) != null && block.SlimBlock.FatBlock.IsWorking &&
                            block.SlimBlock.FatBlock.IsFunctional &&
@@ -266,6 +369,12 @@ namespace JumpDriveInhibitor
                    MyAPIGateway.Utilities.ShowMessage("Jump-drive Inhibitor", $"An error happened in the mod, see an admin:CODE 42: {e.Message}");
                }
 
+        }
+
+        public override void Close()
+        {
+            base.Close();
+            
         }
 
         public override VRage.ObjectBuilders.MyObjectBuilder_EntityBase GetObjectBuilder(bool copy = false)
