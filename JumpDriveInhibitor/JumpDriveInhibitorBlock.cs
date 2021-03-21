@@ -116,8 +116,9 @@ namespace JumpDriveInhibitor
                 
                 flareDefinition.Intensity = 0;
             }
-            
-            
+
+            MyAPIGateway.Session.Unload += UnloadData;
+            MyAPIGateway.Session.Save += SaveData;
         }
 
         private void Setup()
@@ -397,7 +398,7 @@ namespace JumpDriveInhibitor
 
         }
         
-        protected override void UnloadData()
+        private void UnloadData()
         {
             if (_isClientRegistered)
             {
@@ -420,20 +421,16 @@ namespace JumpDriveInhibitor
                 MyAPIGateway.Multiplayer.UnregisterMessageHandler(SpeedConsts.ConnectionId, _messageHandler);
                 //MyAPIGateway.Entities.OnEntityAdd -= Entities_OnEntityAdd;
             }
-
-            base.UnloadData();
         }
 
-        public override void SaveData()
+        private void SaveData()
         {
             if (_isServerRegistered)
             {
                 // Only save the speed back to the server duruing world save.
                 var xmlValue = MyAPIGateway.Utilities.SerializeToXML(ConfigGeneralComponent);
-                MyAPIGateway.Utilities.SetVariable("MidspaceEnvironmentComponent", xmlValue);
+                MyAPIGateway.Utilities.SetVariable("ConfigGeneral", xmlValue);
             }
-
-            base.SaveData();
         }
         
         private static void HandleMessage(byte[] message)
