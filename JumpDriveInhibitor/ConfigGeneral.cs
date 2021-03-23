@@ -29,16 +29,20 @@ namespace JumpDriveInhibitor
         
         public ConfigGeneral LoadSettings()
         {
-	        if (MyAPIGateway.Utilities.FileExistsInLocalStorage("PrizeSettings.xml", typeof(ConfigGeneral)) == true)
+	        if (MyAPIGateway.Utilities.FileExistsInLocalStorage("InhibitorSettings.xml", typeof(ConfigGeneral)) == true)
 	        {
 		        try
 		        {
 			        ConfigGeneral config = null;
-			        var reader = MyAPIGateway.Utilities.ReadFileInLocalStorage("PrizeSettings.xml", typeof(ConfigGeneral));
+			        var reader = MyAPIGateway.Utilities.ReadFileInLocalStorage("InhibitorSettings.xml", typeof(ConfigGeneral));
 			        string configcontents = reader.ReadToEnd();
 			        config = MyAPIGateway.Utilities.SerializeFromXML<ConfigGeneral>(configcontents);
 			        //MyVisualScriptLogicProvider.SendChatMessage(config.ToString(), "config: ");
 			        if (!MyAPIGateway.Session.IsServer) return config;
+			        MyLog.Default.WriteLine($"1234 {config.MaxRadius}");
+			        MyLog.Default.WriteLine($"12345 {config.MaxPowerDrain}");
+			        MyLog.Default.WriteLine($"1234 culture {config.MaxRadius.ToString(CultureInfo.InvariantCulture)}");
+			        MyLog.Default.WriteLine($"12345 culture {config.MaxPowerDrain.ToString(CultureInfo.InvariantCulture)}");
 			        var msg = $"{config.MaxRadius.ToString(CultureInfo.InvariantCulture)}-{config.MaxPowerDrain.ToString(CultureInfo.InvariantCulture)}";
 			        NetworkService.SendPacket(msg);
 			        return config;
@@ -56,7 +60,7 @@ namespace JumpDriveInhibitor
 	        try
 	        {
 		        //MyVisualScriptLogicProvider.SendChatMessage("new config.", "Debug");
-		        using (var writer = MyAPIGateway.Utilities.WriteFileInLocalStorage("PrizeSettings.xml", typeof(ConfigGeneral)))
+		        using (var writer = MyAPIGateway.Utilities.WriteFileInLocalStorage("InhibitorSettings.xml", typeof(ConfigGeneral)))
 		        {
 			        writer.Write(MyAPIGateway.Utilities.SerializeToXML(settings));
 			        //writer.Write("config");
@@ -78,7 +82,7 @@ namespace JumpDriveInhibitor
         {
 	        try
 	        {
-		        using (var writer = MyAPIGateway.Utilities.WriteFileInLocalStorage("PrizeSettings.xml", typeof(ConfigGeneral)))
+		        using (var writer = MyAPIGateway.Utilities.WriteFileInLocalStorage("InhibitorSettings.xml", typeof(ConfigGeneral)))
 		        {
 
 			        writer.Write(MyAPIGateway.Utilities.SerializeToXML(settings));

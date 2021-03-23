@@ -18,6 +18,7 @@ using VRage.Game.ModAPI;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
+using VRage.Library.Utils;
 using VRage.Utils;
 using IMyBeacon = Sandbox.ModAPI.Ingame.IMyBeacon;
 using IMyJumpDrive = Sandbox.ModAPI.Ingame.IMyJumpDrive;
@@ -45,13 +46,15 @@ namespace JumpDriveInhibitor
         private Matrix subpartLocalMatrix; // keeping the matrix here because subparts are being re-created on paint, resetting their orientations
         private float targetSpeedMultiplier; // used for smooth transition
         private List<BeaconStorage> store = new List<BeaconStorage>();
-        public static JumpDriveInhibitorBlock instance;
+        public static JumpDriveInhibitorBlock Instance;
+        public float size;
 
         public override void Init(VRage.ObjectBuilders.MyObjectBuilder_EntityBase objectBuilder)
         {
             
             _objectBuilder = objectBuilder;
             _beacon = (Entity as IMyBeacon);
+            Instance = this;
 
             if (_beacon != null && _beacon.BlockDefinition.SubtypeId.Equals("JumpInhibitor"))
             {
@@ -90,7 +93,7 @@ namespace JumpDriveInhibitor
                 flareDefinition.Intensity = 0;
             }
 
-            NetworkService.NetworkInit();
+            
         }
         
         public void updateDef(string message)
@@ -110,6 +113,19 @@ namespace JumpDriveInhibitor
         private void Setup()
         {
             Settings.LoadSettings();
+
+            if (MyAPIGateway.Session.IsServer)
+            {
+                var b = _beacon as MyCubeBlock;
+                if (b != null)
+                {
+                    var def = b.BlockDefinition as MyBeaconDefinition;
+               
+                    def.MaxBroadcastRadius = Settings.General.MaxRadius;
+                    def.MaxBroadcastPowerDrainkW = Settings.General.MaxPowerDrain;
+                }
+            }    
+            
         }
         public override void UpdateAfterSimulation()
         {
@@ -189,6 +205,19 @@ namespace JumpDriveInhibitor
                        {
                            subpart.SetEmissiveParts("EmissiveSpotlight", Color.LimeGreen, beaconStorage.Beacon.Radius/6000);
                        }
+                       
+                       if (beaconStorage.Beacon.Radius < 600)
+                       {
+                           size = 0.75f;
+                       }
+                       else if (beaconStorage.Beacon.Radius > 600 && beaconStorage.Beacon.Radius < 3000)
+                       {
+                           size = beaconStorage.Beacon.Radius / 1000;
+                       }
+                       else
+                       {
+                           size = 3.0f;
+                       }
 
                        if (!beaconStorage.Once)
                        {
@@ -197,15 +226,16 @@ namespace JumpDriveInhibitor
                            e.WorldMatrix = beaconStorage.Beacon.WorldMatrix;
                            beaconStorage.Effect = e;
                            beaconStorage.Once = true;
-                           beaconStorage.Effect.UserScale = beaconStorage.Beacon.Radius/600;
-                           beaconStorage.Effect.UserEmitterScale = beaconStorage.Beacon.Radius/600;
+                           beaconStorage.Effect.UserScale = size;
+                           beaconStorage.Effect.UserEmitterScale = size;
                            beaconStorage.Effect.Play();
                        }
-
+                       
+                       
                        if (beaconStorage.Effect != null)
                        {
-                           beaconStorage.Effect.UserScale = beaconStorage.Beacon.Radius/600;
-                           beaconStorage.Effect.UserEmitterScale = beaconStorage.Beacon.Radius/600;
+                           beaconStorage.Effect.UserScale = size;
+                           beaconStorage.Effect.UserEmitterScale = size;
                            beaconStorage.Effect.WorldMatrix = beaconStorage.Beacon.WorldMatrix;
                            beaconStorage.Effect.Update();
                        }    

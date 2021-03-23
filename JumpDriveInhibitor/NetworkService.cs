@@ -10,6 +10,7 @@ namespace JumpDriveInhibitor
         public static void NetworkInit()
         {
             MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(42, HandleIncomingPacket);
+            
         }
 
         private static void HandleIncomingPacket(ushort comId, byte[] msg, ulong id, bool relible)
@@ -17,7 +18,9 @@ namespace JumpDriveInhibitor
             try
             {
                 var message = Encoding.ASCII.GetString(msg);
-                JumpDriveInhibitorBlock.instance.updateDef(message);
+                JumpDriveInhibitorBlock.Instance.updateDef(message);
+                
+                
             }
             catch (Exception error)
             {
@@ -31,12 +34,18 @@ namespace JumpDriveInhibitor
             try
             {
                 var bytes = Encoding.ASCII.GetBytes(data);
-                MyAPIGateway.Multiplayer.SendMessageToServer(42, bytes);
+                MyAPIGateway.Multiplayer.SendMessageToOthers(42, bytes, true);
+                
             }
             catch (Exception error)
             {
                 MyLog.Default.WriteLine($" error in Jump Inhibitor network{error}");
             }
         }
+
+        public static void NetworkEnd()
+        {
+            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(42, HandleIncomingPacket);
+        }    
     }
 }
